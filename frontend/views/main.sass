@@ -1,0 +1,133 @@
+!dialogbackgroundcolor = #111
+!dialogforegroundcolor = #ddd
+
+=border-radius(!radius)
+  /*-moz-border-radius = !radius*/
+  /*-webkit-border-radius = !radius*/
+  border-radius = !radius
+
+body
+  background-color: #000
+  height: 100%
+  overflow: hidden
+
+select
+  background-color = !dialogbackgroundcolor
+  color = !dialogforegroundcolor
+  margin: 5mm
+  font-size: 1.5em
+  width: 95%
+
+=box
+  font-family: sans-serif
+  background-color: #333
+  +border-radius(15px)
+  text-align: center
+  color: #ddd
+  margin: 0.25cm
+  float: left
+  line-height: 1.5cm
+  
+.boxSquare
+  +box
+  width: 6cm
+  height: 6cm
+
+.boxHorizontal 
+  +box
+  width: 12.5cm
+  height: 6cm
+  
+.boxVertical
+  +box
+  width: 6cm
+  height: 12.5cm
+
+.boxQuad
+  +box
+  width: 12.5cm
+  height: 12.5cm
+  overflow: hidden
+  line-height: 1.25cm
+
+.boxFloatingDialogParent
+  position: absolute
+  left: 5%
+  top: -15px
+  right: 1cm
+  height: 100%
+  width: 95%
+  display: none
+
+.boxFloatingDialog
+  font-family: sans-serif
+  background-color = !dialogbackgroundcolor
+  color = !dialogforegroundcolor
+  height: 28em
+  width: 87%
+  border-left: 5px solid #99d
+  border-right: 5px solid #99d
+  border-bottom: 5px solid #99d
+  overflow: hidden
+  +border-radius(15px)
+  opacity: .95
+  padding: 5mm
+  padding-top: 15mm
+
+.dialogButtonBox
+  
+.boxHeader 
+  clear: both
+  font-size: 150%
+
+.boxInfoLine 
+  clear: left
+  font-size: 1.25em
+
+.ttcRoute 
+  background-color: #d00
+  color: #fff
+  +border-radius(3px)
+  padding: 1mm
+  margin-right: 0.3em
+  font-size: 1.25em
+
+.boxButton 
+  +border-radius(8px)
+  padding: 2mm
+  padding-bottom: 0
+  text-align: center
+
+.buttonDiv 
+  line-height: 0.5em
+
+.infoTextBox 
+  font-family: monospace
+  font-size: 1em
+  border: 1px solid #aaa
+  background-color: #222
+  +border-radius(8px)
+  line-height: 8mm
+  width: 95%
+  text-align: center
+  margin-left: auto
+  margin-right: auto
+  margin-top: 0.5em
+  height: 8mm
+  overflow: hidden
+
+.volumeContainer
+  background-color: #222
+  border: 2px solid #000
+  width: 10mm
+  height: 110px
+  float: right
+  margin-right: 10mm
+
+.volumeKnob
+  background-color: #0f0
+  height: 5mm
+  
+.longText
+  font-size: 1em
+  line-height: 1.25em

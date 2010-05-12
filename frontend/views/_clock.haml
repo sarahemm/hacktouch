@@ -1,0 +1,30 @@
+%script{:type => "text/javascript",
+        :src  => "/mootools-1.2.4-core-nc.js"}
+        
+:javascript
+  function pad(number, length) {
+    var str = '' + number;
+    while (str.length < length) {
+        str = '0' + str;
+    }
+    return str;
+  }
+  
+  function updateTime() {
+    var now = new Date();
+    var weekdayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    $('date').innerHTML = weekdayNames[now.getDay()] + " " + monthNames[now.getMonth()] + " " + now.getDate();
+    $('time').innerHTML = pad(now.getHours(), 2) + ":" + pad(now.getMinutes(), 2) + ":" + pad(now.getSeconds(), 2);
+  }
+
+  updateTime.periodical(1000);
+
+.boxHorizontal
+  %div#date{'style' => 'font-size: 3em'}
+    
+  %div#time{'style' => 'font-size: 6em; padding-top: 1cm;'}
+    
+    
+  

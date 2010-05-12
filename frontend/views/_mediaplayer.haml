@@ -1,0 +1,151 @@
+%script{:type => "text/javascript",
+        :src  => "/mootools-1.2.4-core-nc.js"}
+
+%script{:type => "text/javascript",
+        :src  => "/mootools-1.2.4.4-more.js"}
+
+:javascript
+  function showDialog(dialogElement) {
+    dialogElement = $(dialogElement)
+    dialogParentElement = dialogElement.parentNode.parentNode;
+    dialogSlider = dialogElement.get('slide');
+    
+    dialogParentElement.style.display = 'block';
+    // we shouldn't have to set this every time, but for some reason it doesn't "stick" like it's supposed to
+    dialogSlider.setOptions({transition: 'back:in:out'})
+    dialogSlider.slideIn();
+  }
+  
+  function hideDialog(dialogElement) {
+    dialogElement = $(dialogElement)
+    dialogParentElement = dialogElement.parentNode.parentNode;
+    dialogSlider = dialogElement.get('slide');
+    
+    // we shouldn't have to set this every time, but for some reason it doesn't "stick" like it's supposed to
+    dialogSlider.setOptions({transition: 'back:in:out'})
+    dialogSlider.setOptions({onComplete: function(){
+  	  dialogParentElement.style.display = 'none';
+  	  dialogSlider.removeEvents('onComplete');
+    }});
+  	dialogSlider.slideOut();
+  }
+  
+  // AJAX periodic object to update the Now Playing text box and the status of the play/stop button
+  var nowPlayingUpdater = new Request({
+      method: 'get',
+      url: '/now_playing',
+      initialDelay: 1000,
+      delay: 5000,
+      limit: 20000,
+      onSuccess: function(responseText, responseXML) {
+        $("now_playing_box").innerHTML = responseText;
+        if(responseText == "") {
+          $("play").src = "images/play.png";
+        } else {
+          $("play").src = "images/stop.png";
+        }
+      }
+  });
+  
+  // AJAX one-shot object to update the list of audio streams available
+  var audioStreamsUpdater = new Request.JSON({
+      method: 'get',
+      url: '/audio_streams',
+      onSuccess: function(responseJSON, responseXML) {
+        $("stream_list").length = 0;
+        for(var i=0; i<responseJSON.length; i++) {
+          var stream = responseJSON[i];
+          $("stream_list").add(new Option(stream['name'], stream['url'], false, false), null);
+        }
+      }
+  });
+  
+  window.addEvent('domready', function() {
+    // set up the media selection / stream selection dialog box
+    var streamsSlider = new Fx.Slide($('media_selection_box'), {
+      mode: 'vertical',
+    	transition: 'back:in:out',
+    	duration: 'normal',
+    }).hide();
+    
+    // the eject button shows the list of streams to select from (updating the list via AJAX)
+    $('eject').addEvent('click', function(){
+      showDialog('media_selection_box');
+      audioStreamsUpdater.send();
+    });
+    
+    // the cancel button just closes the dialog without taking any action
+    $('ms_cancel').addEvent('click', function(){
+    	hideDialog('media_selection_box')
+    });
+    
+    // the ok button closes the dialog and sends a request to play whatever stream the user selected
+    $('ms_ok').addEvent('click', function(){
+  	  hideDialog('media_selection_box');
+      $("now_playing_box").innerHTML = "Attempting to play...";
+      var myRequest = new Request({
+        url: '/now_playing',
+        data: {'source' : $("stream_list").options[$("stream_list").selectedIndex].value}
+      }).send();
+    });
+    
+    var volumeSlider = new Slider($('volume_container'), $('volume_knob'), {'mode': 'vertical', 'wheel': true});
+    
+    nowPlayingUpdater.startTimer();
+  });
+  
+  function muteUnmute() {
+    muteBtn = document.getElementById("mute");
+    if(muteBtn.src.indexOf("volume_red") > 0) {
+      muteBtn.src = "images/volume_green.png";
+    } else {
+      muteBtn.src = "images/volume_red.png";
+    }
+  }
+ 
+  function playStop() {
+    playBtn = document.getElementById("play");
+    if(playBtn.src.indexOf("play") > 0) {
+      playBtn.src = "images/stop.png";
+      $("now_playing_box").innerHTML = "Attempting to play...";
+      var myRequest = new Request({url: '/now_playing'}).send();
+    } else {
+      playBtn.src = "images/play.png";
+      var myRequest = new Request({
+        url: '/now_playing',
+        data: {'_method' : 'delete'}
+      }).send();
+      $("now_playing_box").innerHTML = "&nbsp;";
+    }
+  }
+
+.boxHorizontal#mediaplayer_box
+  .boxHeader
+    HackTouch Media Player
+  .buttonDiv
+    %img#eject{:src => "images/eject.png",
+         :alt => "Eject"}
+    %img#play{:src => "images/play.png",
+         :alt => "Play",
+         :onClick => "playStop();"}
+    %img#mute{:src => "images/volume_green.png",
+         :alt => "Mute",
+         :onClick => "muteUnmute();"}
+    .volumeContainer#volume_container
+      .volumeKnob#volume_knob
+        &nbsp;
+  .infoTextBox#now_playing_box
+    &nbsp;
+
+.boxFloatingDialogParent#media_selection_box_parent
+  .boxFloatingDialog#media_selection_box
+    Select a stream to play.
+    %br
+    %select#stream_list{:size => "10"}
+      %option
+        Loading stream list...
+    .dialogButtonBox
+      %img#ms_cancel{:src => "images/cancel.png",
+                     :alt => "Cancel"}
+      %img#ms_ok{:src => "images/ok.png",
+                 :alt => "OK"}

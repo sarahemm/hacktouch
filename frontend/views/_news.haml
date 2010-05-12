@@ -1,0 +1,30 @@
+%script{:type => "text/javascript",
+        :src  => "/mootools-1.2.4-core-nc.js"}
+
+%script{:type => "text/javascript",
+        :src  => "/mootools-1.2.4.4-more.js"}
+
+:javascript
+  // AJAX periodic object to update the Now Playing text box and the status of the play/stop button
+  var newsUpdater = new Request.JSON({
+    method: 'get',
+    url: '/news',
+    initialDelay: 1000,
+    delay: 15000,
+    limit: 60000,
+    onSuccess: function(responseJSON, responseXML) {
+      $("news_source").innerHTML = responseJSON['source'];
+      $("news_headline").innerHTML = responseJSON['title'];
+      $("news_story").innerHTML = responseJSON['content'];
+    }
+  });
+  
+  newsUpdater.startTimer();
+
+.boxQuad
+  .boxHeader#news_source
+    News
+  %div#news_headline{'style' => 'font-size: 1.25em; line-height: 1em; padding-bottom: 5mm'}
+    Hacklab.TO
+  %div.longText#news_story
+    This just in: Hacklab.TO is awesome!
