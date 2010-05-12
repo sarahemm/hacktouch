@@ -3,6 +3,9 @@
 require 'rubygems'
 require 'mq'
 require 'json'
+require 'log4r'
+require 'log4r/configurator'
+include Log4r
 
 VLC = "/Applications/VLC.app/Contents/MacOS/VLC";
 VLC_ARGS = "--intf=dummy --control=rc --rc-fake-tty";
@@ -11,7 +14,7 @@ class VLCControl
   def initialize
     begin
       # launch VLC and attach an I/O object to its remote control interface
-      @vlc = IO.popen("#{VLC} #{VLC_ARGS}", "w+")
+      @vlc = IO.popen("#{VLC} #{VLC_ARGS} 2>/dev/null", "w+")
     rescue
       puts "error: #{$!}"
     end
@@ -105,13 +108,18 @@ def respond_with_error(header, error)
   MQ.new.queue(header.properties[:reply_to], :auto_delete => true).publish(response_msg.to_json)
 end
 
+Configurator.load_xml_file('log4r.xml')
+log = Logger.get('hacktouch::backend::audiod')
+
 AMQP.start(:host => 'localhost') do
   #AMQP.logging = true
   amq = MQ.new
+  log.debug "Launching and connecting to VLC."
   vlc = VLCControl.new
+  log.debug "VLC ready, subscribing to queue."
   amq.queue('hacktouch.audio.request').subscribe{ |header, msg|
     msg = JSON.parse(msg);
-    puts "@@@@@ COMMAND RECEIVED: #{msg['command']} @@@@@"
+    log.debug "Command '#{msg['command']}' received on request queue."
     case msg['command']
       when 'queue' then
         if(msg['source']) then
@@ -121,6 +129,7 @@ AMQP.start(:host => 'localhost') do
           respond_with_success(header)
         else
           respond_with_error(header, "No audio source provided.")
+          log.warn("Queue command received with no audio source")
         end        
       when 'play' then
         if(msg['source']) then
@@ -149,6 +158,6 @@ AMQP.start(:host => 'localhost') do
         end
         respond_to(header, response_msg);
     end
-    puts "@@@@@ COMMAND PROCESSING COMPLETE @@@@@"
+    log.debug "Command processing complete."
   }
 end

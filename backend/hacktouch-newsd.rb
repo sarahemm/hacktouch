@@ -7,6 +7,12 @@ require 'open-uri'
 require 'mq'
 require 'json'
 require 'sequel'
+require 'log4r'
+require 'log4r/configurator'
+include Log4r
+
+Configurator.load_xml_file('log4r.xml')
+@log = Logger.get('hacktouch::backend::newsd')
 
 def feed_list
   db = Sequel.connect('sqlite://hacktouch.sqlite3')
@@ -19,16 +25,16 @@ def feed_list
 end
 
 def refresh_feeds
-  puts("Refreshing news feeds...");
+  @log.info "Beginning refresh of news feeds."
   
   feeds = []
   feed_list.each do |source|
     content = ""
-    puts(" #{source}")
+    @log.debug "Refreshing #{source}"
     open(source) do |s| content = s.read end
     feeds.push(RSS::Parser.parse(content, false))
   end
-  puts("Refresh complete.")
+  @log.info "News feed refresh complete."
   feeds
 end
 
@@ -68,7 +74,7 @@ AMQP.start(:host => 'localhost') do
         randomItem = rand(rss.items.length)
         msg['title'] = rss.items[randomItem].title
         msg['content'] = rss.items[randomItem].description.split("at Slashdot.")[0]
-        puts("replying to #{header.properties[:reply_to]} with an article from #{msg['source']}")
+        @log.debug "replying to #{header.properties[:reply_to]} with an article from #{msg['source']}"
         respond_to(header, msg)
     end
   }
