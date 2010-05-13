@@ -61,6 +61,10 @@ get '/news' do
   
   msg = Hash.new
   msg['command'] = 'get'
-  response_msg = HacktouchMQ.mq_request("hacktouch.news.request", msg)
+  begin
+    response_msg = HacktouchMQ.mq_request("hacktouch.news.request", msg)
+  rescue TimeoutException
+    halt 504, {'Content-Type' => 'text/plain'}, 'Request to news backend timed out.'
+  end
   "#{response_msg.to_json}"
 end

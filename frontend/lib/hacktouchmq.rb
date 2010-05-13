@@ -19,7 +19,7 @@ class HacktouchMQ
     
     request_q.publish(request_msg.to_json, :reply_to => response_queue)
     start_time = Time.now
-    until (response_msg = response_q.pop()) || Time.now - start_time > 10
+    until (response_msg = response_q.pop()) || Time.now - start_time > 5
     end
     if !response_msg then
       raise TimeoutException

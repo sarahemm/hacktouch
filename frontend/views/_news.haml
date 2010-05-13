@@ -16,6 +16,11 @@
       $("news_source").innerHTML = responseJSON['source'];
       $("news_headline").innerHTML = responseJSON['title'];
       $("news_story").innerHTML = responseJSON['content'];
+    },
+    onFailure: function(xhr) {
+      $("news_source").innerHTML = "News Unavailable";
+      $("news_headline").innerHTML = "Backend Timeout";
+      $("news_story").innerHTML = "The HackTouch system timed out while requesting a news article from the backend.  Please check that hacktouch-newsd is running.";
     }
   });
   
