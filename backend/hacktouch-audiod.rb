@@ -21,29 +21,27 @@ class VLCControl
   end
   
   def playlist_clear
-    @vlc.puts("clear")
-    get_retval
+    exec_cmd "clear"
   end
 
   def pause
-    @vlc.puts("pause")
-    get_retval
+    exec_cmd "pause"
   end
   
   def stop
-    @vlc.puts("stop")
-    get_retval
+    exec_cmd "stop"
   end
   
   def play
-    @vlc.puts("play")
-    get_retval
+    exec_cmd "play"
   end
   
   def playlist_add(source)
-  puts "@@@ PLAYING: #{source} @@@"
-    @vlc.puts("add \"#{source}\"")
-    get_retval
+    exec_cmd "add \"#{source}\""
+  end
+  
+  def quit
+    exec_cmd "quit"
   end
   
   def playing?
@@ -56,11 +54,6 @@ class VLCControl
     flush_input(@vlc)
     @vlc.puts("get_title")
     get_plain_response.chomp!
-  end
-
-  def quit
-    @vlc.puts("quit")
-    get_retval
   end
   
   def flush_input(handle)
@@ -87,6 +80,11 @@ class VLCControl
     if(re_match) then
       return re_match[1];
     end
+  end
+  
+  def exec_cmd(cmd)
+    @vlc.puts(cmd)
+    get_retval
   end
 end
 
@@ -133,9 +131,11 @@ AMQP.start(:host => 'localhost') do
         end        
       when 'play' then
         if(msg['source']) then
+          log.info("Playing #{msg['source']}.")
           vlc.playlist_clear
           vlc.playlist_add(msg['source']);
         else
+          log.debug("Playing existing playlist item.")
           vlc.play
         end
         respond_with_success(header)
