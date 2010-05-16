@@ -1,0 +1,17 @@
+Steps to get this running (roughly):
+1. Install required dependencies (most available via rubygems):
+ - AMQP
+ - Carrot
+ - Log4r
+ - JSON
+ - Sinatra
+ - static_assets plugin for Sinatra
+ - Sass
+ - Haml
+ - Sequel
+ - Sqlite3
+ - VLC
+2. Customize the VLC path in hacktouch-audiod.rb to match your installation.
+3. Start the backend: "./backend/hacktouch-audiod.rb && ./backend/hacktouch-newsd.rb".
+4. Start the frontend: "./frontend/hacktouch-frontend.rb".
+5. Visit http://localhost:4567/ in a browser.
