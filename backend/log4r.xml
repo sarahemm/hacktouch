@@ -16,4 +16,5 @@
   
   <logger name="hacktouch::backend::audiod" />
   <logger name="hacktouch::backend::newsd" />
+  <logger name="hacktouch::backend::weatherd" />
 </log4r_config>
