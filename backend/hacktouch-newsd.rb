@@ -9,6 +9,7 @@ require 'json'
 require 'sequel'
 require 'log4r'
 require 'log4r/configurator'
+require 'lib/hacktouchbackendmq'
 include Log4r
 
 Configurator.load_xml_file('log4r.xml')
@@ -38,24 +39,6 @@ def refresh_feeds
   feeds
 end
 
-def respond_to(header, response_msg)
-  response_msg['result'] = 'success'
-  MQ.new.queue(header.properties[:reply_to], :auto_delete => true).publish(response_msg.to_json)
-end
-
-def respond_with_success(header)
-  response_msg = Hash.new
-  response_msg['result'] = 'success'
-  MQ.new.queue(header.properties[:reply_to], :auto_delete => true).publish(response_msg.to_json)
-end
-
-def respond_with_error(header, error)
-  response_msg = Hash.new
-  response_msg['result'] = 'error'
-  response_msg['error'] = error
-  MQ.new.queue(header.properties[:reply_to], :auto_delete => true).publish(response_msg.to_json)
-end
-
 feeds = refresh_feeds
 
 AMQP.start(:host => 'localhost') do
@@ -65,17 +48,17 @@ AMQP.start(:host => 'localhost') do
   
   amq = MQ.new
   amq.queue('hacktouch.news.request').subscribe{ |header, msg|
-    msg = JSON.parse(msg);
+    msg = HacktouchBackendMessage.new(header, msg);
     case msg['command']
       when 'get' then
-        rss = feeds[rand(feeds.length)]
-        msg = Hash.new
-        msg['source'] = rss.channel.title
-        randomItem = rand(rss.items.length)
-        msg['title'] = rss.items[randomItem].title
-        msg['content'] = rss.items[randomItem].description.split("at Slashdot.")[0]
+        randomFeed = feeds[rand(feeds.length)]
+        randomItem = rand(randomFeed.items.length)
+        response_msg = Hash.new
+        response_msg['source'] = randomFeed.channel.title
+        response_msg['title'] = randomFeed.items[randomItem].title
+        response_msg['content'] = randomFeed.items[randomItem].description.split("at Slashdot.")[0]
         @log.debug "replying to #{header.properties[:reply_to]} with an article from #{msg['source']}"
-        respond_to(header, msg)
+        msg.respond_with_success response_msg
     end
   }
 end

@@ -5,6 +5,7 @@ require 'mq'
 require 'json'
 require 'log4r'
 require 'log4r/configurator'
+require 'lib/hacktouchbackendmq'
 include Log4r
 
 VLC = "/Applications/VLC.app/Contents/MacOS/VLC";
@@ -88,24 +89,6 @@ class VLCControl
   end
 end
 
-def respond_to(header, response_msg)
-  response_msg['result'] = 'success'
-  MQ.new.queue(header.properties[:reply_to], :auto_delete => true).publish(response_msg.to_json)
-end
-
-def respond_with_success(header)
-  response_msg = Hash.new
-  response_msg['result'] = 'success'
-  MQ.new.queue(header.properties[:reply_to], :auto_delete => true).publish(response_msg.to_json)
-end
-
-def respond_with_error(header, error)
-  response_msg = Hash.new
-  response_msg['result'] = 'error'
-  response_msg['error'] = error
-  MQ.new.queue(header.properties[:reply_to], :auto_delete => true).publish(response_msg.to_json)
-end
-
 Configurator.load_xml_file('log4r.xml')
 log = Logger.get('hacktouch::backend::audiod')
 
@@ -116,7 +99,7 @@ AMQP.start(:host => 'localhost') do
   vlc = VLCControl.new
   log.debug "VLC ready, subscribing to queue."
   amq.queue('hacktouch.audio.request').subscribe{ |header, msg|
-    msg = JSON.parse(msg);
+    msg = HacktouchBackendMessage.new(header, msg);
     log.debug "Command '#{msg['command']}' received on request queue."
     case msg['command']
       when 'queue' then
@@ -124,9 +107,9 @@ AMQP.start(:host => 'localhost') do
           vlc.playlist_clear
           vlc.playlist_add(msg['source']);
           vlc.stop
-          respond_with_success(header)
+          msg.respond_with_success
         else
-          respond_with_error(header, "No audio source provided.")
+          msg.respond_with_error "No audio source provided."
           log.warn("Queue command received with no audio source")
         end        
       when 'play' then
@@ -138,25 +121,25 @@ AMQP.start(:host => 'localhost') do
           log.debug("Playing existing playlist item.")
           vlc.play
         end
-        respond_with_success(header)
+        msg.respond_with_success
       when 'pause' then
         vlc.pause
-        respond_with_success(header)
+        msg.respond_with_success
       when 'stop' then
         vlc.stop
-        respond_with_success(header)
+        msg.respond_with_success
       when 'now_playing' then
         response_msg = Hash.new
         response_msg['now_playing'] = vlc.now_playing
-        respond_to(header, response_msg)
+        msg.respond_with_success response_msg
       when 'status' then
         response_msg = Hash.new
         if(vlc.playing?) then
-          response_msg['status'] = "playing";
+          response_msg['status'] = "playing"
         else
-          response_msg['status'] = "stopped";
+          response_msg['status'] = "stopped"
         end
-        respond_to(header, response_msg);
+        msg.respond_with_success response_msg
     end
     log.debug "Command processing complete."
   }
