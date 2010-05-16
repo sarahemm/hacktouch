@@ -67,6 +67,8 @@ AMQP.start(:host => 'localhost') do
           siteConditions[requested_site]["humidity"] = current.elements["relativeHumidity"].text
           siteConditions[requested_site]["wind_speed"] = current.elements["wind/speed"].text
           siteConditions[requested_site]["wind_direction"] = current.elements["wind/direction"].text
+          siteConditions[requested_site]["icon_code"] = current.elements["iconCode"].text
+          siteConditions[requested_site]["conditions"] = current.elements["condition"].text
         else
           @log.debug "Using previously cached weather data for #{requested_site}"
         end

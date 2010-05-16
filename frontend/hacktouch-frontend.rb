@@ -68,3 +68,18 @@ get '/news' do
   end
   "#{response_msg.to_json}"
 end
+
+get '/weather' do
+  content_type :json
+  
+  msg = Hash.new
+  msg['command'] = 'current'
+  msg['province'] = "ON"
+  msg['city'] = "Toronto"
+  begin
+    response_msg = HacktouchMQ.mq_request("hacktouch.weather.request", msg)
+  rescue TimeoutException
+    halt 504, {'Content-Type' => 'text/plain'}, 'Request to weather backend timed out.'
+  end
+  "#{response_msg.to_json}"
+end

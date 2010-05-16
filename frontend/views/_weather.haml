@@ -1,0 +1,37 @@
+%script{:type => "text/javascript",
+        :src  => "/mootools-1.2.4-core-nc.js"}
+
+%script{:type => "text/javascript",
+        :src  => "/mootools-1.2.4.4-more.js"}
+
+:javascript
+  // AJAX periodic object to update the current weather conditions
+  var weatherUpdater = new Request.JSON({
+    method: 'get',
+    url: '/weather',
+    initialDelay: 1000,
+    delay: 15000,
+    limit: 60000,
+    onSuccess: function(responseJSON, responseXML) {
+      $("temperature").innerHTML = responseJSON['temperature'] + "&deg;C ";
+      $("conditions").innerHTML = responseJSON['conditions'];
+      $("weathericon").innerHTML = "<img src='/images/weather/current/" + responseJSON['icon_code'] + ".gif'/>"
+    },
+    onFailure: function(xhr) {
+      $("temperature").innerHTML = "Weather Unavailable";
+      //$("news_headline").innerHTML = "Backend Timeout";
+      //$("news_story").innerHTML = "The HackTouch system timed out while requesting the current weather conditions from the backend.  Please check that hacktouch-weatherd is running.";
+    }
+  });
+  
+  weatherUpdater.startTimer();
+
+.boxSquare
+  .boxHeader
+    Toronto
+  %div#temperature{'style' => 'font-size: 1.5em; line-height: 1em'}
+    Checking...
+  %div#conditions
+    ???
+  %div#weathericon    
+    ???
