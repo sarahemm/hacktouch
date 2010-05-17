@@ -10,6 +10,14 @@ class HacktouchBackendMessage
   def [](msg_field)
     @msg[msg_field]
   end
+  
+  def []=(msg_field, value)
+     @msg[msg_field] = value
+   end
+  
+  def has_key?(key)
+    @msg.has_key? key
+  end
 
   def respond_with_success(response_msg = Hash.new)
     response_msg['result'] = 'success'
