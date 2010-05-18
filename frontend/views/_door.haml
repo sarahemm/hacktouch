@@ -1,0 +1,42 @@
+%script{:type => "text/javascript",
+        :src  => "/mootools-1.2.4-core-nc.js"}
+
+%script{:type => "text/javascript",
+        :src  => "/mootools-1.2.4.4-more.js"}
+
+:javascript
+  // AJAX periodic object to update the recent door entries list
+  var doorUpdater = new Request.JSON({
+    method: 'get',
+    url: '/recent_visitors',
+    initialDelay: 1000,
+    delay: 60 * 1000,
+    limit: 60000,
+    onSuccess: function(responseJSON, responseXML) {
+      var recent_visitors = "";
+      for(var i=0; i<responseJSON['entries'].length; i++) {
+        var entry = responseJSON['entries'][i];
+        var time_ago;
+        if(entry['mins_ago'] < 60) {
+          time_ago = entry['mins_ago'] + "m"
+        } else if(entry['mins_ago'] > 60*24) {
+          time_ago = (Math.floor(entry['mins_ago'] / (60*24))) + "d"
+        } else {
+          time_ago = (Math.floor(entry['mins_ago'] / 60)) + "h"
+        }
+        recent_visitors += "<li>" + time_ago + " ago " + entry['name'] + "</li>"
+      }
+      $("recent_visitors").innerHTML = "<ul>" + recent_visitors + "</ul>";
+    },
+    onFailure: function(xhr) {
+      $("recent_visitors").innerHTML = "Door Data Unavailable";
+    }
+  });
+  
+  doorUpdater.startTimer();
+
+.boxSquare
+  .boxHeader
+    Recent Visitors
+  %div#recent_visitors
+    Retrieving list...
