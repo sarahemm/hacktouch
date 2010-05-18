@@ -26,15 +26,15 @@ AMQP.start(:host => 'localhost') do
     msg = HacktouchBackendMessage.new(header, msg);
     case msg['command']
       when 'recent' then
-        msg['entries'] = '10' if !msg.has_key? 'entries'
-        msg['entries'] = '100' if msg['entries'] > 100
+        msg['entries'] = 10 if !msg.has_key? 'entries'
+        msg['entries'] = 100 if msg['entries'] > 100
         response_msg = Hash.new
         response_msg['entries'] = []
         @log.debug "Retrieving the most recent #{msg['entries']} door entries from the database."
         db[:access_log].join(:card, :card_id => :card_id).reverse_order(:logged).limit(msg['entries']).each do |entry|
           entry_hash = Hash.new
           entry_hash['time'] = entry[:logged]
-          entry_hash['name'] = entry[:user]
+          entry_hash['name'] = entry[:nick]
           response_msg['entries'].push(entry_hash)
         end
         @log.debug "Replying to #{header.properties[:reply_to]} with #{msg['entries']} recent door entries."

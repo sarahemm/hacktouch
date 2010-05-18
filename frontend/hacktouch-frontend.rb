@@ -83,3 +83,22 @@ get '/weather' do
   end
   "#{response_msg.to_json}"
 end
+
+get '/recent_visitors' do
+  content_type :json
+  
+  msg = Hash.new
+  msg['command'] = 'recent'
+  msg['entries'] = 5
+  begin
+    response_msg = HacktouchMQ.mq_request("hacktouch.door.request", msg)
+  rescue TimeoutException
+    halt 504, {'Content-Type' => 'text/plain'}, 'Request to door system backend timed out.'
+  end
+  # add how many minutes ago it was, to make the frontend easier to deal with
+  response_msg['entries'].each do |entry|
+    entry['mins_ago'] = (Time.new - Time.parse(entry['time'])).to_i / 60
+  end
+  
+  "#{response_msg.to_json}"
+end
