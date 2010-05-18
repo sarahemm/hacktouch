@@ -10,7 +10,7 @@
     method: 'get',
     url: '/weather',
     initialDelay: 1000,
-    delay: 15000,
+    delay: 15*60*1000,
     limit: 60000,
     onSuccess: function(responseJSON, responseXML) {
       $("temperature").innerHTML = responseJSON['temperature'] + "&deg;C ";
