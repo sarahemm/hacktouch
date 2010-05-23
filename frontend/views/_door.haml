@@ -19,7 +19,7 @@
         var time_ago;
         if(entry['mins_ago'] < 60) {
           time_ago = entry['mins_ago'] + "m"
-        } else if(entry['mins_ago'] > 60*24) {
+        } else if(entry['mins_ago'] > 60*48) {
           time_ago = (Math.floor(entry['mins_ago'] / (60*24))) + "d"
         } else {
           time_ago = (Math.floor(entry['mins_ago'] / 60)) + "h"
@@ -38,5 +38,5 @@
 .boxSquare
   .boxHeader
     Recent Visitors
-  %div#recent_visitors
+  %div#recent_visitors{'style' => 'padding-left: 5mm;'}
     Retrieving list...

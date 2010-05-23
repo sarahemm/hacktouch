@@ -89,7 +89,7 @@ get '/recent_visitors' do
   
   msg = Hash.new
   msg['command'] = 'recent'
-  msg['entries'] = 5
+  msg['entries'] = 8
   begin
     response_msg = HacktouchMQ.mq_request("hacktouch.door.request", msg)
   rescue TimeoutException
