@@ -1,0 +1,37 @@
+%script{:type => "text/javascript",
+        :src  => "/mootools-1.2.4-core-nc.js"}
+
+%script{:type => "text/javascript",
+        :src  => "/mootools-1.2.4.4-more.js"}
+
+:javascript
+  // AJAX periodic object to update the current weather conditions
+  var streetcarUpdater = new Request.JSON({
+    method: 'get',
+    url: '/streetcar',
+    initialDelay: 1000,
+    delay: 60*1000,
+    limit: 60000,
+    onSuccess: function(responseJSON, responseXML) {
+      $("northbound").innerHTML = responseJSON['northbound'];
+      $("southbound").innerHTML = responseJSON['southbound'];
+      },
+    onFailure: function(xhr) {
+      $("streetcar-north").innerHTML = "Unavailable";
+      $("streetcar-south").innerHTML = "Unavailable";
+    }
+  });
+
+  streetcarUpdater.startTimer();
+
+.boxSquare
+  .boxHeader
+    Spadina Streetcar
+  %div.streetcar{'style' => 'font-size: 1.5em; line-height: 1em'}
+    Northbound
+  %div#streetcar-north 
+    ???
+  %div.streetcar{'style' => 'font-size: 1.5em; line-height: 1em'}
+    Southbound
+  %div#streetcar-south
+    ???
