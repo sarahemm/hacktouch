@@ -18,4 +18,5 @@
   <logger name="hacktouch::backend::newsd" />
   <logger name="hacktouch::backend::weatherd" />
   <logger name="hacktouch::backend::doord" />
+  <logger name="hacktouch::backend::streetcar" />
 </log4r_config>

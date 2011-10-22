@@ -102,3 +102,20 @@ get '/recent_visitors' do
   
   "#{response_msg.to_json}"
 end
+
+get '/streetcar' do
+  content_type :json
+  
+  msg = Hash.new
+  msg['command'] = 'next'
+  msg['route'] = '510'
+  msg['stop'] = "spadnass"
+  msg['dir1'] = "spadnass_n"
+  msg['dir2'] = "spadnass_s"
+  begin
+    response_msg = HacktouchMQ.mq_request("hacktouch.streetcar.request", msg)
+  rescue TimeoutException
+    halt 504, {'Content-Type' => 'text/plain'}, 'Request to streetcar backend timed out.'
+  end
+  "#{response_msg.to_json}"
+end
